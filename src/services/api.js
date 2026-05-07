@@ -1,12 +1,19 @@
 const API_BASE_URL = "https://jsonplaceholder.typicode.com";
 
-const fetchPosts = async ({ page }) => {
-    const response = await fetch(`${API_BASE_URL}/posts?_page=${page}&_limit=10`)
+const fetchPosts = async (page) => {
+    const limit = 10;
+    const response = await fetch(`${API_BASE_URL}/posts?_page=${page}&_limit=${limit}`)
     const data = await response.json()
+    const totalCount = parseInt(response.headers.get("x-total-count") || "0", 10)
+    
     if (!response.ok) {
         throw new Error("Network response was not ok")
     }
-    return data
+
+    return {
+        posts: data,
+        hasMore: page * limit < totalCount
+    }
 }
 
 const createPost = async (data) => {

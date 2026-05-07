@@ -20,9 +20,9 @@ import {
 
 const TanstackQuery = () => {
     const [page, setPage] = useState(1);
-    const { data: posts, isLoading, isError, error } = useQuery({
+    const { data, isLoading, isError, error, isPlaceholderData, isFetching } = useQuery({
         queryKey: ["posts", page],
-        queryFn: () => fetchPosts({ page }),
+        queryFn: () => fetchPosts(page),
         staleTime: 5 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
         refetchOnWindowFocus: true,
@@ -31,8 +31,6 @@ const TanstackQuery = () => {
         placeholderData: keepPreviousData,
         refetchOnReconnect: true
     });
-
-    const totalPages = Math.ceil(100 / 10);
 
     if (isLoading) {
         return (
@@ -74,7 +72,7 @@ const TanstackQuery = () => {
             </div>
 
             <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
-                {posts.map((post) => (
+                {data?.posts?.map((post) => (
                     <Card key={post.id} className="group relative overflow-hidden border-border/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/20">
                         {/* Subtle background glow on hover */}
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(var(--primary),0.05),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -103,7 +101,7 @@ const TanstackQuery = () => {
                     <PaginationContent>
                         <PaginationItem>
                             <PaginationPrevious
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                onClick={() => setPage((old) => Math.max(old - 1, 1))}
                                 disabled={page === 1}
                                 className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                             />
@@ -115,10 +113,16 @@ const TanstackQuery = () => {
 
                         <PaginationItem>
                             <PaginationNext
-                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                disabled={page === totalPages}
-                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
+                                onClick={() => {
+                                    if (!isPlaceholderData && data?.hasMore) {
+                                        setPage((old) => old + 1)
+                                    }
+                                }}
+                                disabled={isPlaceholderData || !data?.hasMore}
+                                className={isPlaceholderData || !data?.hasMore ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
                         </PaginationItem>
+                        {/* {isFetching ? <span className="ml-4 text-xs text-muted-foreground animate-pulse"> Updating...</span> : null} */}
                     </PaginationContent>
                 </Pagination>
             </div>
