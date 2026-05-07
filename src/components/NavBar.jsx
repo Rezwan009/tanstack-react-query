@@ -3,27 +3,27 @@ import { Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import PostModal from "./post/PostModal";
 import { Link } from "react-router";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
-// import { createPost } from "../services/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createPost } from "../services/api";
 
 const NavBar = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-    // const mutation = useMutation({
-    //     mutationFn: (data) => createPost(data),
-    //     onSuccess: () => {
-    //         queryClient.invalidateQueries({ queryKey: ['posts'] });
-    //         setIsModalOpen(false);
-    //     },
-    //     onError: (error) => {
-    //         console.error("Error creating post:", error);
-    //     }
-    // });
+    const mutation = useMutation({
+        mutationFn: (data) => createPost(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            setIsModalOpen(false);
+        },
+        onError: (error) => {
+            console.error("Error creating post:", error);
+        }
+    });
 
     const handleCreatePost = (data) => {
         console.log("Creating post:", data);
-        // mutation.mutate(data);
+        mutation.mutate(data);
         setIsModalOpen(false)
     };
 

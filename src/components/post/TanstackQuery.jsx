@@ -1,5 +1,5 @@
 import { fetchPosts } from "../../services/api";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
     Card,
     CardContent,
@@ -8,11 +8,28 @@ import {
     CardDescription,
 } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { useState } from "react";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/Pagination";
 
 const TanstackQuery = () => {
+    const [page, setPage] = useState(1);
     const { data: posts, isLoading, isError, error } = useQuery({
-        queryKey: ["posts"],
-        queryFn: fetchPosts
+        queryKey: ["posts", page],
+        queryFn: () => fetchPosts({ page }),
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: true,
+        refetchOnMount: true,
+        // refetchInterval: 5000,
+        placeholderData: keepPreviousData,
+        refetchOnReconnect: true
     });
 
     if (isLoading) {
@@ -50,9 +67,8 @@ const TanstackQuery = () => {
         <div className="max-w-[1000px] mx-auto px-16 py-12">
             <div className="text-center mb-12 mt-12">
                 <h1 className="text-4xl font-extrabold mb-2 bg-gradient-to-br from-primary to-muted-foreground bg-clip-text text-transparent">
-                    Tanstack Query
+                    Explore the latest posts fetched efficiently from the API.
                 </h1>
-                <p className="text-muted-foreground text-lg">Explore the latest posts fetched efficiently from the API.</p>
             </div>
 
             <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
@@ -78,6 +94,31 @@ const TanstackQuery = () => {
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+
+            <div className="mt-12 flex justify-center">
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                        </PaginationItem>
+
+                        <PaginationItem>
+                            <PaginationLink isActive>{page}</PaginationLink>
+                        </PaginationItem>
+
+                        <PaginationItem>
+                            <PaginationNext
+                                onClick={() => setPage((p) => p + 1)}
+                                className="cursor-pointer"
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     );
