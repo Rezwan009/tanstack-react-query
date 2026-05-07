@@ -32,6 +32,8 @@ const TanstackQuery = () => {
         refetchOnReconnect: true
     });
 
+    const totalPages = Math.ceil(100 / 10);
+
     if (isLoading) {
         return (
             <div className="max-w-[1000px] mx-auto px-6">
@@ -113,9 +115,9 @@ const TanstackQuery = () => {
 
                         <PaginationItem>
                             <PaginationNext
-                                onClick={() => setPage((p) => p + 1)}
-                                className="cursor-pointer"
-                            />
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
